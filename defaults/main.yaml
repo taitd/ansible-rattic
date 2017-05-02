@@ -1,0 +1,240 @@
+---
+
+# Version to be installed
+rattic_release: 1.3.1
+
+# Packages required for the PostgreSQL DB creation
+artifactory_db_pgsql_pkgs:
+  - python-psycopg2
+
+# Packages required for the MySQL DB creation
+artifactory_db_mysql_pkgs:
+  - MySQL-python
+
+# DB dependencies
+rattic_pkgs__db: "{{
+  artifactory_db_pgsql_pkgs
+    if rattic_db_engine == 'postgresql'
+    else
+  artifactory_db_mysql_pkgs
+    if rattic_db_engine == 'mysql'
+    else
+  [] }}"
+
+# Default dependencies
+rattic_pkgs__default:
+  - python-lxml
+  - python-pip
+  - gcc
+  - python-devel
+  - python-virtualenv
+  - openldap-devel
+  - openssl-devel
+  - libpqxx-devel
+  - libxml2-devel
+  - libxslt-devel
+
+# Custom dependencies
+rattic_pkgs__custom: []
+
+# Final list of dependencies
+rattic_pkgs: "{{
+  rattic_pkgs__default +
+  rattic_pkgs__db +
+  rattic_pkgs__custom }}"
+
+# Rattic source URL
+rattic_source_url: https://github.com/tildaslash/RatticWeb/archive/v{{ rattic_release }}.tar.gz
+
+# Whether to validate SSL certificates
+rattic_source_validate_certs: yes
+
+# Rattic directory
+rattic_home: /opt/rattic
+
+# Pypi source
+rattic_pypi_host: pypi.python.org
+rattic_pypi_url: https://"{{ rattic_pypi_host }}/simple/"
+
+
+# DB engine [sqlite|postgresql|mysql]
+rattic_db_engine: sqlite
+
+# User used to create DB and user
+rattic_db_login_user: "{{
+  'postgres'
+    if rattic_db_engine == 'postgresql'
+    else
+  'root' }}"
+
+# Password used to create DB and user
+rattic_db_login_password: "{{
+  'postgres'
+     if rattic_db_engine == 'postgresql'
+     else
+  None }}"
+
+# DB server configuration options
+rattic_db_host: localhost
+rattic_db_port: "{{
+  5432
+    if rattic_db_engine == 'postgresql'
+    else
+  3306 }}"
+rattic_db_name: rattic
+rattic_db_user: rattic
+rattic_db_password: rattic
+
+# SQLite DB file meremissions
+rattic_db_sqlite_user: root
+rattic_db_sqlite_group: root
+rattic_db_sqlite_mode: 0640
+
+
+# Values of the default options of the ratticweb section
+rattic_config_ratticweb_debug: "false"
+rattic_config_ratticweb_disable_export: "false"
+rattic_config_ratticweb_hostname: localhost
+rattic_config_ratticweb_loginless_ssh_fingerprints: "false"
+rattic_config_ratticweb_loglevel: ERROR
+rattic_config_ratticweb_max_attachment_size: 2097152
+rattic_config_ratticweb_passwordexpirydays: 90
+rattic_config_ratticweb_secretkey: "{{ ansible_machine_id }}"
+rattic_config_ratticweb_timezone: UTC
+rattic_config_ratticweb_urlroot: /
+
+# Default options of the ratticweb section
+rattic_config_ratticweb__default:
+  debug: "{{ rattic_config_ratticweb_debug }}"
+  disable_export: "{{ rattic_config_ratticweb_disable_export }}"
+  hostname: "{{ rattic_config_ratticweb_hostname }}"
+  loginless_ssh_fingerprints: "{{ rattic_config_ratticweb_loginless_ssh_fingerprints }}"
+  loglevel: "{{ rattic_config_ratticweb_loglevel }}"
+  max_attachment_size: "{{ rattic_config_ratticweb_max_attachment_size }}"
+  passwordexpirydays: "{{ rattic_config_ratticweb_passwordexpirydays }}"
+  secretkey: "{{ rattic_config_ratticweb_secretkey }}"
+  timezone: "{{ rattic_config_ratticweb_timezone }}"
+  urlroot: "{{ rattic_config_ratticweb_urlroot }}"
+
+# Custom options of the ratticweb section
+rattic_config_ratticweb__custom: {}
+
+# Final ratticweb section
+rattic_config_ratticweb: "{{
+  rattic_config_ratticweb__default.update(rattic_config_ratticweb__custom) }}{{
+  rattic_config_ratticweb__default }}"
+
+
+# Values of the default options of the filepaths section
+rattic_config_filepaths_media: ""
+rattic_config_filepaths_static: "{{ rattic_home }}/static"
+
+# Default options of the filepaths section
+rattic_config_filepaths__default:
+  media: "{{ rattic_config_filepaths_media }}"
+  static: "{{ rattic_config_filepaths_static }}"
+
+# Custom options of the filepaths section
+rattic_config_filepaths__custom: {}
+
+# Final filepaths section
+rattic_config_filepaths: "{{
+  rattic_config_filepaths__default.update(rattic_config_filepaths__custom) }}{{
+  rattic_config_filepaths__default }}"
+
+
+# Values of the default options of the database section
+rattic_config_database_engine: "{{
+  'django.db.backends.postgresql_psycopg2'
+    if rattic_db_engine == 'postgresql'
+    else
+  'django.db.backends.mysql'
+    if rattic_db_engine == 'mysql'
+    else
+  'django.db.backends.sqlite3' }}"
+rattic_config_database_name: "{{
+  rattic_db_name
+    if rattic_db_engine in ['postgresql', 'mysql']
+    else
+  ('db/' ~ rattic_db_name) }}"
+
+# Default options of the database section
+rattic_config_database__default:
+  engine: "{{ rattic_config_database_engine }}"
+  name: "{{ rattic_config_database_name }}"
+
+# Custom options of the database section
+rattic_config_database__custom: {}
+
+# Final database section
+rattic_config_database: "{{
+  rattic_config_database__default.update(rattic_config_database__custom) }}{{
+  rattic_config_database__default }}"
+
+
+# Values of the default options of the scheduler section
+rattic_config_scheduler_change_queue_reminder_period: 0
+
+# Default options of the scheduler section
+rattic_config_scheduler__default:
+  change_queue_reminder_period: "{{ rattic_config_scheduler_change_queue_reminder_period }}"
+
+# Custom options of the scheduler section
+rattic_config_scheduler__custom: {}
+
+# Final scheduler section
+rattic_config_scheduler: "{{
+  rattic_config_scheduler__default.update(rattic_config_scheduler__custom) }}{{
+  rattic_config_scheduler__default }}"
+
+
+# Values of the default options of the email section
+rattic_config_email_backend: django.core.mail.backends.smtp.EmailBackend
+rattic_config_email_filepath: ""
+rattic_config_email_host: localhost
+rattic_config_email_port: 25
+rattic_config_email_usetls: "false"
+rattic_config_email_user: ""
+rattic_config_email_password: ""
+rattic_config_email_from_email: ratticdb@localhost
+
+# Default options of the email section
+rattic_config_email__default:
+  backend: "{{ rattic_config_email_backend }}"
+  filepath: "{{ rattic_config_email_filepath }}"
+  host: "{{ rattic_config_email_host }}"
+  port: "{{ rattic_config_email_port }}"
+  usetls: "{{ rattic_config_email_usetls }}"
+  user: "{{ rattic_config_email_user }}"
+  password: "{{ rattic_config_email_password }}"
+  from_email: "{{ rattic_config_email_from_email }}"
+
+# Custom options of the email section
+rattic_config_email__custom: {}
+
+# Final email section
+rattic_config_email: "{{
+  rattic_config_email__default.update(rattic_config_email__custom) }}{{
+  rattic_config_email__default }}"
+
+
+# Backup section
+rattic_config_backup: {}
+
+
+# Default config
+rattic_config__default:
+  ratticweb: "{{ rattic_config_ratticweb }}"
+  filepaths: "{{ rattic_config_filepaths }}"
+  database: "{{ rattic_config_database }}"
+  scheduler: "{{ rattic_config_scheduler }}"
+  email: "{{ rattic_config_email }}"
+  backup: "{{ rattic_config_backup }}"
+
+# Custom config
+rattic_config__custom: {}
+
+# Final config
+rattic_config: "{{
+  rattic_config__default.update(rattic_config__custom) }}{{
+  rattic_config__default }}"
