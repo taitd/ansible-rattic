@@ -94,7 +94,7 @@ rattic_db_sqlite_mode: 0640
 # Values of the default options of the ratticweb section
 rattic_config_ratticweb_debug: "false"
 rattic_config_ratticweb_disable_export: "false"
-rattic_config_ratticweb_hostname: localhost
+rattic_config_ratticweb_hostname: "*"
 rattic_config_ratticweb_loginless_ssh_fingerprints: "false"
 rattic_config_ratticweb_loglevel: ERROR
 rattic_config_ratticweb_max_attachment_size: 2097152
